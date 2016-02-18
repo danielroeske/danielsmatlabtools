@@ -29,18 +29,25 @@ function [b,c]=findInSorted(x,range)
 
 A=range(1);
 B=range(end);
-x=[-inf,x,inf];
 a=1;
 b=numel(x);
 c=1;
 d=numel(x);
-while (a+1<b||c+1<d)
+if A<=x(1)
+   b=a;
+end
+if B>=x(end)
+    c=d;
+end
+while (a+1<b)
     lw=(floor((a+b)/2));
     if (x(lw)<A)
         a=lw;
     else
         b=lw;
     end
+end
+while (c+1<d)
     lw=(floor((c+d)/2));
     if (x(lw)<=B)
         c=lw;
@@ -48,6 +55,4 @@ while (a+1<b||c+1<d)
         d=lw;
     end
 end
-c=c-1;
-b=max(b-1,1);
 end
