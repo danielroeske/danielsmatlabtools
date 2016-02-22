@@ -10,7 +10,7 @@ end
 max_iterations=1000;
 min_iterations=3;
 max_time=10;
-overhead=tic_toc_overhead();
+overhead=tictocoverhead();
 raw=nan(1,max_iterations);
 for repeat=1:max_iterations
     varargout = cell(1:n);
