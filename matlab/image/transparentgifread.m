@@ -1,4 +1,4 @@
-function [image,map,transparent]=transparentGifRead(filename)
+function [image,map,transparent]=transparentgifread(filename)
 %TRANSPARENTGIFREAD reads GIF files maintaining the transparency.
 %   [IMAGE, MAP, TRANSPARENT] = TRANSPARENTGIFREAD(FILENAME) returns a gif
 %   file.
@@ -9,14 +9,12 @@ function [image,map,transparent]=transparentGifRead(filename)
 %   Please not the offset of 1 between colormap and unsigned integer
 %   images. Example code to replace transparency with green:
 %   
-%   [stack,map,transparent]=transparentGifRead('tr.gif');
+%   [stack,map,transparent]=transparentgifread('tr.gif');
 %   map(transparent+1,:)=[0,1,0] %offset 1 because uint8 starts at 0 but indices at 1
 %   for frame=1:size(stack,ndims(stack))
 %    imshow(stack(:,:,frame),map);
 %    pause(1/25);
 %   end
-%
-%   Known issues: Function is not compartible to OCTAVE   
 %
 %   Author Daniel Roeske <danielroeske.de>
 %
@@ -43,21 +41,28 @@ if nargout==3
       transparent=info(1).TransparentColor-1;
   end
 end
-str = javax.imageio.ImageIO.createImageInputStream(java.io.File(filename));
-t = javax.imageio.ImageIO.getImageReaders(str);
-reader = t.next();
-reader.setInput(str);
-numframes = reader.getNumImages(true);
+%don't use new java syntax for octave compartibility
+%str = javax.imageio.ImageIO.createImageInputStream(java.io.File(filename));
+f=javaObject('java.io.File',filename);
+str=javaMethod('createImageInputStream','javax.imageio.ImageIO',f);
+%t = javax.imageio.ImageIO.getImageReaders(str);
+t=javaMethod('getImageReaders','javax.imageio.ImageIO',str);
+%reader = t.next();
+reader=javaMethod('next',t);
+%reader.setInput(str);
+javaMethod('setInput',reader,str);
+%numframes = reader.getNumImages(true);
+numframes=javaMethod('getNumImages',reader,true);
+height=info.Height;
+width=info.Width;
+image=zeros(height,width,1,numframes,'uint8');
 for imageix = 1:numframes
-    data = reader.read(imageix-1).getData();
-    height = data.getHeight();
-    width = data.getWidth();
-    data2 = reader.read(imageix-1).getData().getPixels(0,0,width,height,[]);
-    if imageix == 1
-        image=zeros(height,width,1,numframes,'uint8');
-    end
+    %data2 = reader.read(imageix-1).getData().getPixels(0,0,width,height,[]);
+    h=javaMethod('read',reader,imageix-1);
+    data=javaMethod('getData',h);
+    data2=javaMethod('getPixels',data,0,0,width,height,[]);
     %row major vs column major fix
     image(:,:,1,imageix) = reshape(data2,[width height]).';%'
 end
-str.close();
+javaMethod('close',str);
 end
